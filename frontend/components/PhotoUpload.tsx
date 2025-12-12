@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
-import { api } from "@/lib/api";
-import type { Photo } from "@/lib/api";
+import backend from "~backend/client";
+import type { Photo } from "~backend/photo/upload";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Upload, X, Image as ImageIcon } from "lucide-react";
@@ -69,7 +69,7 @@ export default function PhotoUpload({
         const base64 = await fileToBase64(file);
 
         // Upload
-        await api.photo.upload({
+        await backend.photo.upload({
           data: base64,
           mimeType: file.type,
           filename: file.name,
@@ -136,7 +136,7 @@ export default function PhotoUpload({
 
   const handleDeletePhoto = async (photoId: number) => {
     try {
-      await api.photo.deletePhoto({ id: photoId });
+      await backend.photo.deletePhoto({ id: photoId });
       toast({
         title: "Success",
         description: "Photo deleted successfully",

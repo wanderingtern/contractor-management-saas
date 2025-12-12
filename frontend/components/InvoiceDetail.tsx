@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { api } from "@/lib/api";
-import type { Invoice, Photo } from "@/lib/api";
+import backend from "~backend/client";
+import type { Invoice } from "~backend/invoice/types";
+import type { Photo } from "~backend/photo/upload";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import PhotoUpload from "./PhotoUpload";
@@ -35,7 +36,7 @@ export default function InvoiceDetail() {
   const loadInvoice = async () => {
     if (!id) return;
     try {
-      const data = await api.invoice.get({ id: parseInt(id) });
+      const data = await backend.invoice.get({ id: parseInt(id) });
       setInvoice(data);
     } catch (error) {
       console.error("Failed to load invoice:", error);
@@ -53,7 +54,7 @@ export default function InvoiceDetail() {
   const loadPhotos = async () => {
     if (!id) return;
     try {
-      const response = await api.photo.list({ invoiceId: parseInt(id) });
+      const response = await backend.photo.list({ invoiceId: parseInt(id) });
       setPhotos(response.photos);
     } catch (error) {
       console.error("Failed to load photos:", error);
@@ -63,7 +64,7 @@ export default function InvoiceDetail() {
   const handleDelete = async () => {
     if (!id) return;
     try {
-      await api.invoice.deleteInvoice({ id: parseInt(id) });
+      await backend.invoice.deleteInvoice({ id: parseInt(id) });
       toast({
         title: "Success",
         description: "Invoice deleted successfully",
@@ -82,7 +83,7 @@ export default function InvoiceDetail() {
   const handleMarkAsPaid = async () => {
     if (!id) return;
     try {
-      await api.invoice.update({
+      await backend.invoice.update({
         id: parseInt(id),
         status: "paid",
       });

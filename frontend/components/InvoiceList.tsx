@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { api } from "@/lib/api";
-import type { Invoice } from "@/lib/api";
+import backend from "~backend/client";
+import type { Invoice } from "~backend/invoice/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, FileText, DollarSign, Calendar, CreditCard } from "lucide-react";
@@ -19,7 +19,7 @@ export default function InvoiceList() {
 
   const loadInvoices = async () => {
     try {
-      const response = await api.invoice.list({});
+      const response = await backend.invoice.list({});
       setInvoices(response.invoices);
     } catch (error) {
       console.error("Failed to load invoices:", error);

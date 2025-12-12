@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { api } from "@/lib/api";
-import type { Estimate } from "@/lib/api";
+import backend from "~backend/client";
+import type { Estimate } from "~backend/estimate/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, FileText, DollarSign, Calendar } from "lucide-react";
@@ -19,7 +19,7 @@ export default function EstimateList() {
 
   const loadEstimates = async () => {
     try {
-      const response = await api.estimate.list({});
+      const response = await backend.estimate.list({});
       setEstimates(response.estimates);
     } catch (error) {
       console.error("Failed to load estimates:", error);

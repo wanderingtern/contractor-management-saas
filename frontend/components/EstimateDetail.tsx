@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { api } from "@/lib/api";
-import type { Estimate, Photo } from "@/lib/api";
+import backend from "~backend/client";
+import type { Estimate } from "~backend/estimate/types";
+import type { Photo } from "~backend/photo/upload";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import PhotoUpload from "./PhotoUpload";
@@ -36,7 +37,7 @@ export default function EstimateDetail() {
   const loadEstimate = async () => {
     if (!id) return;
     try {
-      const data = await api.estimate.get({ id: parseInt(id) });
+      const data = await backend.estimate.get({ id: parseInt(id) });
       setEstimate(data);
     } catch (error) {
       console.error("Failed to load estimate:", error);
@@ -54,7 +55,7 @@ export default function EstimateDetail() {
   const loadPhotos = async () => {
     if (!id) return;
     try {
-      const response = await api.photo.list({ estimateId: parseInt(id) });
+      const response = await backend.photo.list({ estimateId: parseInt(id) });
       setPhotos(response.photos);
     } catch (error) {
       console.error("Failed to load photos:", error);
@@ -64,7 +65,7 @@ export default function EstimateDetail() {
   const handleDelete = async () => {
     if (!id) return;
     try {
-      await api.estimate.deleteEstimate({ id: parseInt(id) });
+      await backend.estimate.deleteEstimate({ id: parseInt(id) });
       toast({
         title: "Success",
         description: "Estimate deleted successfully",
@@ -84,7 +85,7 @@ export default function EstimateDetail() {
     if (!id) return;
     setApproving(true);
     try {
-      const result = await api.estimate.approve({ id: parseInt(id) });
+      const result = await backend.estimate.approve({ id: parseInt(id) });
       toast({
         title: "Success",
         description: `Estimate approved! Invoice ${result.invoiceId} created.`,

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { api } from "@/lib/api";
-import type { LineItem } from "@/lib/api";
+import backend from "~backend/client";
+import type { LineItem } from "~backend/estimate/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -52,7 +52,7 @@ export default function EstimateForm() {
 
   const loadCustomers = async () => {
     try {
-      const response = await api.customer.list();
+      const response = await backend.customer.list();
       setCustomers(response.customers.map(c => ({ id: c.id, name: c.name })));
       // Set first customer as default if creating new estimate
       if (!isEdit && response.customers.length > 0) {
@@ -71,7 +71,7 @@ export default function EstimateForm() {
   const loadEstimate = async () => {
     if (!id) return;
     try {
-      const data = await api.estimate.get({ id: parseInt(id) });
+      const data = await backend.estimate.get({ id: parseInt(id) });
       setFormData({
         customerId: data.customerId,
         title: data.title,
@@ -170,7 +170,7 @@ export default function EstimateForm() {
       };
 
       if (isEdit && id) {
-        await api.estimate.update({
+        await backend.estimate.update({
           id: parseInt(id),
           ...payload,
         });
@@ -179,7 +179,7 @@ export default function EstimateForm() {
           description: "Estimate updated successfully",
         });
       } else {
-        const result = await api.estimate.create(payload);
+        const result = await backend.estimate.create(payload);
         toast({
           title: "Success",
           description: "Estimate created successfully",

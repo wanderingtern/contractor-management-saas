@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { api } from "@/lib/api";
-import type { LineItem } from "@/lib/api";
+import backend from "~backend/client";
+import type { LineItem } from "~backend/invoice/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -52,7 +52,7 @@ export default function InvoiceForm() {
 
   const loadCustomers = async () => {
     try {
-      const response = await api.customer.list();
+      const response = await backend.customer.list();
       setCustomers(response.customers.map(c => ({ id: c.id, name: c.name })));
       // Set first customer as default if creating new invoice
       if (!isEdit && response.customers.length > 0) {
@@ -71,7 +71,7 @@ export default function InvoiceForm() {
   const loadInvoice = async () => {
     if (!id) return;
     try {
-      const data = await api.invoice.get({ id: parseInt(id) });
+      const data = await backend.invoice.get({ id: parseInt(id) });
       setFormData({
         customerId: data.customerId,
         title: data.title,
@@ -170,7 +170,7 @@ export default function InvoiceForm() {
       };
 
       if (isEdit && id) {
-        await api.invoice.update({
+        await backend.invoice.update({
           id: parseInt(id),
           ...payload,
         });
@@ -179,7 +179,7 @@ export default function InvoiceForm() {
           description: "Invoice updated successfully",
         });
       } else {
-        const result = await api.invoice.create(payload);
+        const result = await backend.invoice.create(payload);
         toast({
           title: "Success",
           description: "Invoice created successfully",
