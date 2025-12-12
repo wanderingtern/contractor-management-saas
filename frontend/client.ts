@@ -34,6 +34,9 @@ const BROWSER = typeof globalThis === "object" && ("window" in globalThis);
  */
 export class Client {
     public readonly customer: customer.ServiceClient
+    public readonly estimate: estimate.ServiceClient
+    public readonly invoice: invoice.ServiceClient
+    public readonly photo: photo.ServiceClient
     private readonly options: ClientOptions
     private readonly target: string
 
@@ -49,6 +52,9 @@ export class Client {
         this.options = options ?? {}
         const base = new BaseClient(this.target, this.options)
         this.customer = new customer.ServiceClient(base)
+        this.estimate = new estimate.ServiceClient(base)
+        this.invoice = new invoice.ServiceClient(base)
+        this.photo = new photo.ServiceClient(base)
     }
 
     /**
@@ -152,6 +158,262 @@ export namespace customer {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI(`/customers/${encodeURIComponent(params.id)}`, {method: "PUT", body: JSON.stringify(body)})
             return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_customer_update_update>
+        }
+    }
+}
+
+/**
+ * Import the endpoint handlers to derive the types for the client.
+ */
+import { approve as api_estimate_approve_approve } from "~backend/estimate/approve";
+import { create as api_estimate_create_create } from "~backend/estimate/create";
+import { deleteEstimate as api_estimate_delete_deleteEstimate } from "~backend/estimate/delete";
+import { get as api_estimate_get_get } from "~backend/estimate/get";
+import { list as api_estimate_list_list } from "~backend/estimate/list";
+import { update as api_estimate_update_update } from "~backend/estimate/update";
+
+export namespace estimate {
+
+    export class ServiceClient {
+        private baseClient: BaseClient
+
+        constructor(baseClient: BaseClient) {
+            this.baseClient = baseClient
+            this.approve = this.approve.bind(this)
+            this.create = this.create.bind(this)
+            this.deleteEstimate = this.deleteEstimate.bind(this)
+            this.get = this.get.bind(this)
+            this.list = this.list.bind(this)
+            this.update = this.update.bind(this)
+        }
+
+        /**
+         * Approve an estimate and convert it to an invoice
+         */
+        public async approve(params: { id: number }): Promise<ResponseType<typeof api_estimate_approve_approve>> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/estimates/${encodeURIComponent(params.id)}/approve`, {method: "POST", body: undefined})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_estimate_approve_approve>
+        }
+
+        /**
+         * Creates a new estimate with line items
+         */
+        public async create(params: RequestType<typeof api_estimate_create_create>): Promise<ResponseType<typeof api_estimate_create_create>> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/estimates`, {method: "POST", body: JSON.stringify(params)})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_estimate_create_create>
+        }
+
+        /**
+         * Delete an estimate (only if not approved)
+         */
+        public async deleteEstimate(params: { id: number }): Promise<ResponseType<typeof api_estimate_delete_deleteEstimate>> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/estimates/${encodeURIComponent(params.id)}`, {method: "DELETE", body: undefined})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_estimate_delete_deleteEstimate>
+        }
+
+        /**
+         * Get a single estimate with line items
+         */
+        public async get(params: { id: number }): Promise<ResponseType<typeof api_estimate_get_get>> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/estimates/${encodeURIComponent(params.id)}`, {method: "GET", body: undefined})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_estimate_get_get>
+        }
+
+        /**
+         * List estimates (optionally filtered by customer or status)
+         */
+        public async list(params: RequestType<typeof api_estimate_list_list>): Promise<ResponseType<typeof api_estimate_list_list>> {
+            // Convert our params into the objects we need for the request
+            const query = makeRecord<string, string | string[]>({
+                customerId: params.customerId === undefined ? undefined : String(params.customerId),
+                status:     params.status === undefined ? undefined : String(params.status),
+            })
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/estimates`, {query, method: "GET", body: undefined})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_estimate_list_list>
+        }
+
+        /**
+         * Update an estimate and optionally replace line items
+         */
+        public async update(params: RequestType<typeof api_estimate_update_update>): Promise<ResponseType<typeof api_estimate_update_update>> {
+            // Construct the body with only the fields which we want encoded within the body (excluding query string or header fields)
+            const body: Record<string, any> = {
+                description: params.description,
+                lineItems:   params.lineItems,
+                notes:       params.notes,
+                taxRate:     params.taxRate,
+                title:       params.title,
+                validUntil:  params.validUntil,
+            }
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/estimates/${encodeURIComponent(params.id)}`, {method: "PUT", body: JSON.stringify(body)})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_estimate_update_update>
+        }
+    }
+}
+
+/**
+ * Import the endpoint handlers to derive the types for the client.
+ */
+import { create as api_invoice_create_create } from "~backend/invoice/create";
+import { deleteInvoice as api_invoice_delete_deleteInvoice } from "~backend/invoice/delete";
+import { get as api_invoice_get_get } from "~backend/invoice/get";
+import { list as api_invoice_list_list } from "~backend/invoice/list";
+import { recordPayment as api_invoice_payment_recordPayment } from "~backend/invoice/payment";
+import { update as api_invoice_update_update } from "~backend/invoice/update";
+
+export namespace invoice {
+
+    export class ServiceClient {
+        private baseClient: BaseClient
+
+        constructor(baseClient: BaseClient) {
+            this.baseClient = baseClient
+            this.create = this.create.bind(this)
+            this.deleteInvoice = this.deleteInvoice.bind(this)
+            this.get = this.get.bind(this)
+            this.list = this.list.bind(this)
+            this.recordPayment = this.recordPayment.bind(this)
+            this.update = this.update.bind(this)
+        }
+
+        /**
+         * Creates a new invoice with line items
+         */
+        public async create(params: RequestType<typeof api_invoice_create_create>): Promise<ResponseType<typeof api_invoice_create_create>> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/invoices`, {method: "POST", body: JSON.stringify(params)})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_invoice_create_create>
+        }
+
+        /**
+         * Delete an invoice (only if not paid)
+         */
+        public async deleteInvoice(params: { id: number }): Promise<ResponseType<typeof api_invoice_delete_deleteInvoice>> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/invoices/${encodeURIComponent(params.id)}`, {method: "DELETE", body: undefined})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_invoice_delete_deleteInvoice>
+        }
+
+        /**
+         * Get a single invoice with line items
+         */
+        public async get(params: { id: number }): Promise<ResponseType<typeof api_invoice_get_get>> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/invoices/${encodeURIComponent(params.id)}`, {method: "GET", body: undefined})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_invoice_get_get>
+        }
+
+        /**
+         * List invoices (optionally filtered by customer or status)
+         */
+        public async list(params: RequestType<typeof api_invoice_list_list>): Promise<ResponseType<typeof api_invoice_list_list>> {
+            // Convert our params into the objects we need for the request
+            const query = makeRecord<string, string | string[]>({
+                customerId: params.customerId === undefined ? undefined : String(params.customerId),
+                status:     params.status === undefined ? undefined : String(params.status),
+            })
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/invoices`, {query, method: "GET", body: undefined})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_invoice_list_list>
+        }
+
+        /**
+         * Record a payment for an invoice (Square integration goes here)
+         */
+        public async recordPayment(params: RequestType<typeof api_invoice_payment_recordPayment>): Promise<ResponseType<typeof api_invoice_payment_recordPayment>> {
+            // Construct the body with only the fields which we want encoded within the body (excluding query string or header fields)
+            const body: Record<string, any> = {
+                amount:          params.amount,
+                paymentMethod:   params.paymentMethod,
+                squarePaymentId: params.squarePaymentId,
+            }
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/invoices/${encodeURIComponent(params.id)}/payment`, {method: "POST", body: JSON.stringify(body)})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_invoice_payment_recordPayment>
+        }
+
+        /**
+         * Update an invoice (only if not paid)
+         */
+        public async update(params: RequestType<typeof api_invoice_update_update>): Promise<ResponseType<typeof api_invoice_update_update>> {
+            // Construct the body with only the fields which we want encoded within the body (excluding query string or header fields)
+            const body: Record<string, any> = {
+                description: params.description,
+                dueDate:     params.dueDate,
+                lineItems:   params.lineItems,
+                notes:       params.notes,
+                taxRate:     params.taxRate,
+                title:       params.title,
+            }
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/invoices/${encodeURIComponent(params.id)}`, {method: "PUT", body: JSON.stringify(body)})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_invoice_update_update>
+        }
+    }
+}
+
+/**
+ * Import the endpoint handlers to derive the types for the client.
+ */
+import { deletePhoto as api_photo_delete_deletePhoto } from "~backend/photo/delete";
+import { list as api_photo_list_list } from "~backend/photo/list";
+import { upload as api_photo_upload_upload } from "~backend/photo/upload";
+
+export namespace photo {
+
+    export class ServiceClient {
+        private baseClient: BaseClient
+
+        constructor(baseClient: BaseClient) {
+            this.baseClient = baseClient
+            this.deletePhoto = this.deletePhoto.bind(this)
+            this.list = this.list.bind(this)
+            this.upload = this.upload.bind(this)
+        }
+
+        /**
+         * Delete a photo from storage and database
+         */
+        public async deletePhoto(params: { id: number }): Promise<ResponseType<typeof api_photo_delete_deletePhoto>> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/photos/${encodeURIComponent(params.id)}`, {method: "DELETE", body: undefined})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_photo_delete_deletePhoto>
+        }
+
+        /**
+         * List photos for a customer, estimate, or invoice
+         */
+        public async list(params: RequestType<typeof api_photo_list_list>): Promise<ResponseType<typeof api_photo_list_list>> {
+            // Convert our params into the objects we need for the request
+            const query = makeRecord<string, string | string[]>({
+                customerId: params.customerId === undefined ? undefined : String(params.customerId),
+                estimateId: params.estimateId === undefined ? undefined : String(params.estimateId),
+                invoiceId:  params.invoiceId === undefined ? undefined : String(params.invoiceId),
+            })
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/photos`, {query, method: "GET", body: undefined})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_photo_list_list>
+        }
+
+        /**
+         * Upload a photo and associate it with a customer, estimate, or invoice
+         */
+        public async upload(params: RequestType<typeof api_photo_upload_upload>): Promise<ResponseType<typeof api_photo_upload_upload>> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/photos/upload`, {method: "POST", body: JSON.stringify(params)})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_photo_upload_upload>
         }
     }
 }
