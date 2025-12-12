@@ -123,8 +123,14 @@ export const list = api<ListEstimatesRequest, ListEstimatesResponse>(
       `;
     }
 
+    // Convert async generator to array
+    const rowsArray = [];
+    for await (const row of rows) {
+      rowsArray.push(row);
+    }
+
     return {
-      estimates: rows.map((estimate) => ({
+      estimates: rowsArray.map((estimate) => ({
         id: estimate.id,
         customerId: estimate.customer_id,
         estimateNumber: estimate.estimate_number,

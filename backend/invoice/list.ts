@@ -151,8 +151,14 @@ export const list = api<ListInvoicesRequest, ListInvoicesResponse>(
       `;
     }
 
+    // Convert async generator to array
+    const rowsArray = [];
+    for await (const row of rows) {
+      rowsArray.push(row);
+    }
+
     return {
-      invoices: rows.map((invoice) => ({
+      invoices: rowsArray.map((invoice) => ({
         id: invoice.id,
         customerId: invoice.customer_id,
         estimateId: invoice.estimate_id,

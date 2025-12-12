@@ -104,8 +104,14 @@ export const list = api<ListPhotosRequest, ListPhotosResponse>(
       `;
     }
 
+    // Convert async generator to array
+    const rowsArray = [];
+    for await (const row of rows) {
+      rowsArray.push(row);
+    }
+
     return {
-      photos: rows.map((row) => ({
+      photos: rowsArray.map((row) => ({
         id: row.id,
         url: row.url,
         storageKey: row.storage_key,

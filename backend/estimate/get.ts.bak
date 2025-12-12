@@ -55,11 +55,8 @@ export const get = api<GetEstimateRequest, Estimate>(
       ORDER BY sort_order ASC
     `;
 
-    // Convert async generator to array
-    const lineItemsArray = [];
-    for await (const item of lineItemRows) {
-      lineItemsArray.push(item);
-    }
+    // Ensure lineItemRows is always an array
+    const lineItemsArray = Array.isArray(lineItemRows) ? lineItemRows : [];
 
     const lineItems: LineItem[] = lineItemsArray.map((item) => ({
       id: item.id,
