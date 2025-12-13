@@ -1,4 +1,6 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Layout from "./components/Layout";
+import Dashboard from "./components/Dashboard";
 import CustomerList from "./components/CustomerList";
 import CustomerDetail from "./components/CustomerDetail";
 import CustomerForm from "./components/CustomerForm";
@@ -13,10 +15,10 @@ import { Toaster } from "@/components/ui/toaster";
 export default function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-background">
-        <Toaster />
+      <Toaster />
+      <Layout>
         <Routes>
-          <Route path="/" element={<Navigate to="/customers" replace />} />
+          <Route path="/" element={<Dashboard />} />
           <Route path="/customers" element={<CustomerList />} />
           <Route path="/customers/new" element={<CustomerForm />} />
           <Route path="/customers/:id" element={<CustomerDetail />} />
@@ -30,7 +32,7 @@ export default function App() {
           <Route path="/invoices/:id" element={<InvoiceDetail />} />
           <Route path="/invoices/:id/edit" element={<InvoiceForm />} />
         </Routes>
-      </div>
+      </Layout>
     </BrowserRouter>
   );
 }
